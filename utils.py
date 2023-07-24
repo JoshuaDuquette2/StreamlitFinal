@@ -170,14 +170,15 @@ def infer_uploaded_webcam(conf, model):
         while not flag and ctx.state.playing:
             with lock:
                 img = image_container["img"]
+            if img is None:
+                continue
+            else:
                 _display_detected_frames(
                     conf,
                     model,
                     st_frame,
                     img
                 )
-            if img is None:
-                continue
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
 
