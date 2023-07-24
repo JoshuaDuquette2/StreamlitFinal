@@ -147,8 +147,8 @@ def infer_uploaded_video(conf, model):
 @st.cache_data  # type: ignore
 def get_ice_servers():
     try:
-        account_sid = os.environ["TWILIO_ACCOUNT_SID"]
-        auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+        account_sid = "ACc827020b695f0eaefe3246b17f0fc29d"
+        auth_token = "de3438561277693942ac98a592fe92e4"
     except KeyError:
         st.write("Using STUN endpoint.")
         return [{"urls": ["stun:stun.l.google.com:19302"]}]
