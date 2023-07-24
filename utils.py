@@ -146,6 +146,7 @@ def video_frame_callback(frame):
         image_container["img"] = img
     return frame
 
+ctx = webrtc_streamer(key="test", video_frame_callback=video_frame_callback)
 def infer_uploaded_webcam(conf, model):
     """
     Execute inference for webcam.
@@ -157,17 +158,15 @@ def infer_uploaded_webcam(conf, model):
         flag = st.button(
             label="Stop running"
         )
-        ctx = webrtc_streamer(key="test", video_frame_callback=video_frame_callback)
+        
         st_frame = st.empty()
         img = None
-        while not flag:
+        while not flag and ctx.state.playing:
             with lock:
                 img = image_container["img"]
             if img is None:
                 continue
-            elif not ctx.state.playing:
-                break
-                
+
             _display_detected_frames(
                 conf,
                 model,
