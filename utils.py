@@ -154,7 +154,7 @@ def get_ice_servers():
     token = client.tokens.create()
     return token.ice_servers
 
-def video_frame_callback(frame):
+async def video_frame_callback(frame):
     img = frame.to_ndarray(format="bgr24")
     with lock:
         image_container["img"] = img
@@ -183,18 +183,19 @@ def infer_uploaded_webcam(conf, model):
             return
 
         st_frame = st.empty()
-        while not flag and webrtc_ctx.state.playing:
-            with lock:
-                img = image_container["img"]
-            if img is None:
-                continue
-            
-            _display_detected_frames(
-                conf,
-                model,
-                st_frame,
-                img
-            )
+        while not flag:
+            if webrtc_ctx.video_receiver:
+                with lock:
+                    img = image_container["img"]
+                if img is None:
+                    continue
+                
+                _display_detected_frames(
+                    conf,
+                    model,
+                    st_frame,
+                    img
+                )
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
 
