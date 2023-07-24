@@ -17,6 +17,8 @@ from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import threading
 from twilio.rest import Client
 import os
+import queue
+import time
 
 lock = threading.Lock()
 image_container = {"img":None}
@@ -148,8 +150,10 @@ def get_ice_servers():
         account_sid = os.environ["TWILIO_ACCOUNT_SID"]
         auth_token = os.environ["TWILIO_AUTH_TOKEN"]
     except KeyError:
+        st.write("Using STUN endpoint.")
         return [{"urls": ["stun:stun.l.google.com:19302"]}]
 
+    st.write("Using REST endpoint.")
     client = Client(account_sid, auth_token)
     token = client.tokens.create()
     return token.ice_servers
@@ -198,10 +202,6 @@ def infer_uploaded_webcam(conf, model):
                 )
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
-
-import threading
-import queue
-import time
 
 
 class FrameReader(threading.Thread):
