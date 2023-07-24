@@ -152,21 +152,20 @@ def infer_uploaded_webcam(conf, model):
     :param model: An instance of the `YOLOv8` class containing the YOLOv8 model.
     :return: None
     """
-    try:
-        def video_frame_callback(frame):
-            img = frame.to_ndarray(format="bgr24")
-            # do something
-            return av.VideoFrame.from_ndarray(img, format="bgr24")
+    
+    def video_frame_callback(frame):
+        img = frame.to_ndarray(format="bgr24")
+        # do something
+        return av.VideoFrame.from_ndarray(img, format="bgr24")
 
-        webrtc_ctx = webrtc_streamer(
-            key="detect",
-            # mode=WebRtcMode.SENDRECV,
-            media_stream_constraints={"video": True, "audio": False},
-            video_frame_callback=video_frame_callback,
-            rtc_configuration={"iceServers":get_ice_servers()}
-        )
-    except Exception as e:
-        st.error(f"Error loading video: {str(e)}")
+    webrtc_ctx = webrtc_streamer(
+        key="detect",
+        # mode=WebRtcMode.SENDRECV,
+        media_stream_constraints={"video": True, "audio": False},
+        video_frame_callback=video_frame_callback,
+        rtc_configuration={"iceServers":get_ice_servers()}
+    )
+    
 
 
 class FrameReader(threading.Thread):
