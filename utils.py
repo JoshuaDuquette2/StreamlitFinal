@@ -13,7 +13,11 @@ import streamlit as st
 import cv2
 from PIL import Image
 import tempfile
+from streamlit_webrtc import webrtc_streamer
+import threading
 
+lock = threading.Lock()
+image_container = {"img":None}
 
 def _display_detected_frames(conf, model, st_frame, image):
     """
@@ -136,6 +140,11 @@ def infer_uploaded_video(conf, model):
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
 
+def video_frame_callback(frame):
+    img = frame.to_ndarray(format="bgr24")
+    with lock:
+        image_container["img"] = img
+    return frame
 
 def infer_uploaded_webcam(conf, model):
     """
@@ -148,20 +157,21 @@ def infer_uploaded_webcam(conf, model):
         flag = st.button(
             label="Stop running"
         )
-        vid_cap = cv2.VideoCapture(cv2.CAP_V4L2)  # local camera
+        ctx = webrtc_streamer(key="test", video_frame_callback=video_frame_callback)
         st_frame = st.empty()
-        while not flag:
-            success, image = vid_cap.read()
-            if success:
-                _display_detected_frames(
-                    conf,
-                    model,
-                    st_frame,
-                    image
-                )
-            else:
-                vid_cap.release()
-                break
+        img = None
+        while not flag and ctx.state.playing:
+            with lock:
+                img = image_container["img"]
+            if img is None:
+                continue
+            _display_detected_frames(
+                conf,
+                model,
+                st_frame,
+                img
+            )
+
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
 
