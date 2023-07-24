@@ -165,6 +165,9 @@ def infer_uploaded_webcam(conf, model):
             rtc_configuration={"iceServers":[{"urls": ["stun:stun.l.google.com:19302"]}]}
         )
 
+        if not webrtc_ctx.state.playing:
+            return
+
         st_frame = st.empty()
         while not flag and webrtc_ctx.state.playing:
             with lock:
@@ -179,7 +182,7 @@ def infer_uploaded_webcam(conf, model):
                 img
             )
     except Exception as e:
-            st.error(f"Error loading video: {str(e)}")
+        st.error(f"Error loading video: {str(e)}")
 
 import threading
 import queue
