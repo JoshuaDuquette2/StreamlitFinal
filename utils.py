@@ -156,11 +156,7 @@ def infer_uploaded_webcam(conf, model):
     :return: None
     """
     try:
-        flag = st.button(
-            label="Stop running"
-        )
-
-        async def video_frame_callback(frame):
+        def video_frame_callback(frame):
             img = frame.to_ndarray(format="bgr24")
             with lock:
                 image_container["img"] = img
@@ -168,12 +164,16 @@ def infer_uploaded_webcam(conf, model):
 
         webrtc_ctx = webrtc_streamer(
             key="detect",
-            mode=WebRtcMode.SENDRECV,
+            # mode=WebRtcMode.SENDRECV,
             media_stream_constraints={"video": True, "audio": False},
             video_frame_callback=video_frame_callback,
             rtc_configuration={"iceServers":get_ice_servers()}
         )
         '''
+        flag = st.button(
+            label="Stop running"
+        )
+
         if not webrtc_ctx.state.playing:
             return
 
