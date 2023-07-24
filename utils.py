@@ -160,6 +160,7 @@ def infer_uploaded_webcam(conf, model):
         mode=WebRtcMode.SENDONLY,
         media_stream_constraints={"video": True, "audio":False}
     )
+    time.sleep(1)
     try:
         flag = st.button(
             label="Stop running"
