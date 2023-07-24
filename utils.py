@@ -15,8 +15,6 @@ from PIL import Image
 import tempfile
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import threading
-from twilio.rest import Client
-import os
 import queue
 import time
 
@@ -146,17 +144,8 @@ def infer_uploaded_video(conf, model):
 
 @st.cache_data  # type: ignore
 def get_ice_servers():
-    try:
-        account_sid = None
-        auth_token = None
-    except KeyError:
-        st.write("Using STUN endpoint.")
-        return [{"urls": ["stun:stun.l.google.com:19302"]}]
+    return [{"urls": ["stun:stun.l.google.com:19302"]}]
 
-    st.write("Using REST endpoint.")
-    client = Client(account_sid, auth_token)
-    token = client.tokens.create()
-    return token.ice_servers
 
 async def video_frame_callback(frame):
     img = frame.to_ndarray(format="bgr24")
