@@ -3,5 +3,4 @@ opencv-python-headless
 Pillow
 py-cpuinfo
 ultralytics
-streamlit-webrtc
-twilio
+streamlit_webrtc

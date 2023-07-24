@@ -19,9 +19,6 @@ import queue
 import time
 import av
 
-lock = threading.Lock()
-image_container = {"img":None}
-
 def _display_detected_frames(conf, model, st_frame, image):
     """
     Display the detected objects on a video frame using the YOLOv8 model.
@@ -158,9 +155,8 @@ def infer_uploaded_webcam(conf, model):
     try:
         def video_frame_callback(frame):
             img = frame.to_ndarray(format="bgr24")
-            with lock:
-                image_container["img"] = img
-            return av.VideoFrame.from_ndarray(img)
+            # do something
+            return av.VideoFrame.from_ndarray(img, format="bgr24")
 
         webrtc_ctx = webrtc_streamer(
             key="detect",
@@ -169,29 +165,6 @@ def infer_uploaded_webcam(conf, model):
             video_frame_callback=video_frame_callback,
             rtc_configuration={"iceServers":get_ice_servers()}
         )
-        '''
-        flag = st.button(
-            label="Stop running"
-        )
-
-        if not webrtc_ctx.state.playing:
-            return
-
-        st_frame = st.empty()
-        while not flag:
-            if webrtc_ctx.video_receiver:
-                with lock:
-                    img = image_container["img"]
-                if img is None:
-                    continue
-                
-                _display_detected_frames(
-                    conf,
-                    model,
-                    st_frame,
-                    img
-                )
-        '''
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
 
