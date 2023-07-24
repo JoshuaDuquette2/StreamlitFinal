@@ -164,7 +164,7 @@ def infer_uploaded_webcam(conf, model):
             img = frame.to_ndarray(format="bgr24")
             with lock:
                 image_container["img"] = img
-            return av.VideoFrame(img)
+            return av.VideoFrame.from_ndarray(img)
 
         webrtc_ctx = webrtc_streamer(
             key="detect",
@@ -173,7 +173,7 @@ def infer_uploaded_webcam(conf, model):
             video_frame_callback=video_frame_callback,
             rtc_configuration={"iceServers":get_ice_servers()}
         )
-
+        '''
         if not webrtc_ctx.state.playing:
             return
 
@@ -191,6 +191,7 @@ def infer_uploaded_webcam(conf, model):
                     st_frame,
                     img
                 )
+        '''
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
 
