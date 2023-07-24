@@ -146,7 +146,7 @@ def video_frame_callback(frame):
         image_container["img"] = img
     return frame
 
-ctx = webrtc_streamer(key="test", video_frame_callback=video_frame_callback)
+
 def infer_uploaded_webcam(conf, model):
     """
     Execute inference for webcam.
@@ -154,6 +154,7 @@ def infer_uploaded_webcam(conf, model):
     :param model: An instance of the `YOLOv8` class containing the YOLOv8 model.
     :return: None
     """
+    ctx = webrtc_streamer(key="test", video_frame_callback=video_frame_callback)
     try:
         flag = st.button(
             label="Stop running"
