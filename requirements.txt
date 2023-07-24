@@ -1,5 +1,5 @@
 streamlit
 opencv-python-headless
 Pillow
-import cpuinfo
+py-cpuinfo
 ultralytics
