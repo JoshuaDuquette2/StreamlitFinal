@@ -17,6 +17,7 @@ from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import threading
 import queue
 import time
+import av
 
 lock = threading.Lock()
 image_container = {"img":None}
@@ -142,16 +143,10 @@ def infer_uploaded_video(conf, model):
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
 
-@st.cache_data  # type: ignore
+@st.cache_data
 def get_ice_servers():
     return [{"urls": ["stun:stun.l.google.com:19302"]}]
 
-
-async def video_frame_callback(frame):
-    img = frame.to_ndarray(format="bgr24")
-    with lock:
-        image_container["img"] = img
-    return frame
 
 def infer_uploaded_webcam(conf, model):
     """
@@ -164,6 +159,13 @@ def infer_uploaded_webcam(conf, model):
         flag = st.button(
             label="Stop running"
         )
+
+        async def video_frame_callback(frame):
+            img = frame.to_ndarray(format="bgr24")
+            with lock:
+                image_container["img"] = img
+            return av.VideoFrame(img)
+
         webrtc_ctx = webrtc_streamer(
             key="detect",
             mode=WebRtcMode.SENDRECV,
