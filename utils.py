@@ -159,7 +159,7 @@ def infer_uploaded_webcam(conf, model):
         )
         webrtc_ctx = webrtc_streamer(
             key="detect",
-            # mode=WebRtcMode.SENDONLY,
+            mode=WebRtcMode.SENDRECV,
             media_stream_constraints={"video": True, "audio": False},
             video_frame_callback=video_frame_callback,
             rtc_configuration={"iceServers":[{"urls": ["stun:stun.l.google.com:19302"]}]}
