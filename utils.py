@@ -13,11 +13,7 @@ import streamlit as st
 import cv2
 from PIL import Image
 import tempfile
-from streamlit_webrtc import webrtc_streamer, WebRtcMode
-import threading
 
-lock = threading.Lock()
-image_container = {"img":None}
 
 def _display_detected_frames(conf, model, st_frame, image):
     """
@@ -140,48 +136,32 @@ def infer_uploaded_video(conf, model):
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
 
-def video_frame_callback(frame):
-    img = frame.to_ndarray(format="bgr24")
-    with lock:
-        image_container["img"] = img
-    return frame
 
-
-def infer_uploaded_webcam(conf, model):
+def infer_uploaded_webcam(conf, model, img):
     """
     Execute inference for webcam.
     :param conf: Confidence of YOLOv8 model
     :param model: An instance of the `YOLOv8` class containing the YOLOv8 model.
     :return: None
     """
-    ctx = webrtc_streamer(
-        key="test", 
-        video_frame_callback=video_frame_callback,
-        mode=WebRtcMode.SENDONLY,
-        media_stream_constraints={"video": True, "audio":False}
-    )
-    time.sleep(1)
     try:
         flag = st.button(
             label="Stop running"
         )
         
         st_frame = st.empty()
-        img = None
-        while not flag and ctx.state.playing:
-            with lock:
-                img = image_container["img"]
+        while not flag:
             if img is None:
                 continue
-            else:
-                _display_detected_frames(
-                    conf,
-                    model,
-                    st_frame,
-                    img
-                )
+            
+            _display_detected_frames(
+                conf,
+                model,
+                st_frame,
+                img
+            )
     except Exception as e:
-        st.error(f"Error loading video: {str(e)}")
+            st.error(f"Error loading video: {str(e)}")
 
 import threading
 import queue
