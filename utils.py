@@ -13,7 +13,7 @@ import streamlit as st
 import cv2
 from PIL import Image
 import tempfile
-from streamlit_webrtc import webrtc_streamer
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import threading
 
 lock = threading.Lock()
@@ -154,7 +154,12 @@ def infer_uploaded_webcam(conf, model):
     :param model: An instance of the `YOLOv8` class containing the YOLOv8 model.
     :return: None
     """
-    ctx = webrtc_streamer(key="test", video_frame_callback=video_frame_callback)
+    ctx = webrtc_streamer(
+        key="test", 
+        video_frame_callback=video_frame_callback,
+        mode=WebRtcMode.SENDONLY,
+        media_stream_constraints={"video": True, "audio":False}
+    )
     try:
         flag = st.button(
             label="Stop running"
@@ -165,16 +170,14 @@ def infer_uploaded_webcam(conf, model):
         while not flag and ctx.state.playing:
             with lock:
                 img = image_container["img"]
+                _display_detected_frames(
+                    conf,
+                    model,
+                    st_frame,
+                    img
+                )
             if img is None:
                 continue
-
-            _display_detected_frames(
-                conf,
-                model,
-                st_frame,
-                img
-            )
-
     except Exception as e:
         st.error(f"Error loading video: {str(e)}")
 
