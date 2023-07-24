@@ -15,6 +15,7 @@ from PIL import Image
 import tempfile
 from streamlit_webrtc import webrtc_streamer, WebRtcMode
 import threading
+from twilio.rest import Client
 
 lock = threading.Lock()
 image_container = {"img":None}
@@ -139,6 +140,18 @@ def infer_uploaded_video(conf, model):
                             break
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
+
+@st.cache_data  # type: ignore
+def get_ice_servers():
+    try:
+        account_sid = os.environ["TWILIO_ACCOUNT_SID"]
+        auth_token = os.environ["TWILIO_AUTH_TOKEN"]
+    except KeyError:
+        return [{"urls": ["stun:stun.l.google.com:19302"]}]
+
+    client = Client(account_sid, auth_token)
+    token = client.tokens.create()
+    return token.ice_servers
 
 def video_frame_callback(frame):
     img = frame.to_ndarray(format="bgr24")

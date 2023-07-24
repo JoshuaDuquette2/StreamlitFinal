@@ -4,3 +4,4 @@ Pillow
 py-cpuinfo
 ultralytics
 streamlit-webrtc
+twilio
