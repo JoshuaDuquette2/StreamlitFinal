@@ -60,6 +60,7 @@ if source_selectbox == config.SOURCES_LIST[0]: # Image
     infer_uploaded_image(confidence, model)
 elif source_selectbox == config.SOURCES_LIST[2]: # Webcam
     img = image_container["img"]
+    print(img)
     infer_uploaded_webcam(confidence, model, img)
 else:
     st.error("Currently only 'Image' and 'Webcam' sources are implemented for this deployment.")
