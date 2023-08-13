@@ -37,6 +37,7 @@ YOLOv8m = DETECTION_MODEL_DIR / "yolov8m.pt"
 YOLOv8l = DETECTION_MODEL_DIR / "yolov8l.pt"
 YOLOv8x = DETECTION_MODEL_DIR / "yolov8x.pt"
 GunV3 = DETECTION_MODEL_DIR / "GunV3.pt"
+GunV7 = DETECTION_MODEL_DIR / "best_v7_60.pt"
 
 DETECTION_MODEL_LIST = [
     "yolov8n.pt",
@@ -44,4 +45,5 @@ DETECTION_MODEL_LIST = [
     "yolov8m.pt",
     "yolov8l.pt",
     "yolov8x.pt",
-    "GunV3.pt"]
+    "GunV3.pt",
+    "best_v7_60.pt"]

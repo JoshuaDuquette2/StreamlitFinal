@@ -9,6 +9,10 @@
 -------------------------------------------------
 """
 from ultralytics import YOLO
+import numpy as np
+import cv2
+import tensorflow as tf
+from tensorflow.keras import layers
 import streamlit as st
 import cv2
 from PIL import Image
@@ -18,6 +22,33 @@ import threading
 import queue
 import time
 import av
+
+class PatchExtractor(layers.Layer):
+    def __init__(self, patch_size):
+        super().__init__()
+        self.patch_size = patch_size
+
+    def call(self, images):
+        batch_size = tf.shape(images)[0]
+        patches = tf.image.extract_patches(
+            images=images,
+            sizes=[1, self.patch_size, self.patch_size, 1],
+            strides=[1, self.patch_size, self.patch_size, 1],
+            rates=[1, 1, 1, 1],
+            padding="VALID",
+        )
+        patch_dims = patches.shape[-1]
+        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
+        return patches
+
+patch_size = 256
+patch_extractor = PatchExtractor(patch_size=patch_size)
+
+
+def get_patches(frame):
+    patches = tf.squeeze(patch_extractor(tf.convert_to_tensor(np.expand_dims(np.asarray(frame), axis=0))))
+    patches = [Image.fromarray(np.reshape(np.uint8(patch), (patch_size, patch_size, 3))) for patch in patches]
+    return patches
 
 def _display_detected_frames(conf, model, st_frame, image):
     """
@@ -36,6 +67,7 @@ def _display_detected_frames(conf, model, st_frame, image):
 
     # Plot the detected objects on the video frame
     res_plotted = res[0].plot()
+    st.write(res_plotted, type(res_plotted))
     st_frame.image(res_plotted,
                    caption='Detected Video',
                    channels="BGR",
@@ -70,7 +102,7 @@ def infer_uploaded_image(conf, model):
         type=("jpg", "jpeg", "png", 'bmp', 'webp')
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         if source_img:
@@ -85,23 +117,40 @@ def infer_uploaded_image(conf, model):
     if source_img:
         if st.button("Execution"):
             with st.spinner("Running..."):
-                res = model.predict(uploaded_image,
-                                    conf=conf)
-                boxes = res[0].boxes
-                res_plotted = res[0].plot()[:, :, ::-1]
+                res_plotted = []
+                all_boxes = []
+
+                for patch in get_patches(uploaded_image):
+                    # st.write(patch)
+                    res = model.predict(patch,
+                                        conf=conf)
+                    temp_res_plotted = res[0].plot()[:, :, ::-1]
+                    res_plotted.append(temp_res_plotted)
+                    all_boxes.extend(res[0].boxes)
 
                 with col2:
-                    st.image(res_plotted,
-                             caption="Detected Image",
-                             use_column_width=True)
+                    res_plotted = np.array(res_plotted)
+                    for res in res_plotted:
+                        st.image(
+                            res,
+                            caption="Detected Image",
+                            use_column_width=False
+                        )
                     try:
                         with st.expander("Detection Results"):
-                            for box in boxes:
+                            for box in all_boxes:
                                 st.write(box.xywh)
                     except Exception as ex:
                         st.write("No image is uploaded yet!")
                         st.write(ex)
-
+                with col3:
+                    res = model.predict(uploaded_image, conf=conf)
+                    res_plotted = res[0].plot()[:, :, ::-1]
+                    st.image(
+                        res_plotted,
+                        caption="Detection Image",
+                        use_column_width=True
+                    )
 
 def infer_uploaded_video(conf, model):
     """
