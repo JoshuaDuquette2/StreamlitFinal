@@ -2,7 +2,7 @@ from pathlib import Path
 from PIL import Image
 import streamlit as st
 import config
-from utils import load_model, infer_uploaded_image, infer_uploaded_webcam
+from utils import load_model, infer_uploaded_image, infer_uploaded_webcam, infer_uploaded_video
 
 
 
@@ -45,6 +45,8 @@ except Exception as e:
 # execute inference for uploaded image
 if source_selectbox == config.SOURCES_LIST[0]: # Image
     infer_uploaded_image(confidence, model)
+if source_selectbox == config.SOURCES_LIST[1]:
+    infer_uploaded_video(confidence, model)
 elif source_selectbox == config.SOURCES_LIST[2]: # Webcam
     infer_uploaded_webcam(confidence, model)
 else:

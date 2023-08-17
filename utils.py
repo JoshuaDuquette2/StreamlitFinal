@@ -22,6 +22,9 @@ import threading
 import queue
 import time
 import av
+from sahi.predict import get_prediction, get_sliced_prediction, predict
+from sahi.prediction import visualize_object_predictions
+from sahi import AutoDetectionModel
 
 class PatchExtractor(layers.Layer):
     def __init__(self, patch_size):
@@ -43,6 +46,7 @@ class PatchExtractor(layers.Layer):
 
 patch_size = 256
 patch_extractor = PatchExtractor(patch_size=patch_size)
+model_path_local = None
 
 
 def get_patches(frame):
@@ -61,21 +65,46 @@ def _display_detected_frames(conf, model, st_frame, image):
     """
     # Resize the image to a standard size
     image = cv2.resize(image, (720, int(720 * (9 / 16))))
+    '''
+    model = AutoDetectionModel.from_pretrained(
+        model_type="yolov8",
+        model_path=model_path_local,
+        confidence_threshold=conf,
+        device="cpu"
+    )
+
+    res = get_sliced_prediction(
+        image,
+        model,
+        slice_height=512,
+        slice_width=512,
+        overlap_height_ratio=0.8,
+        overlap_width_ratio=0.8
+    )
+    '''
+    # res = res.object_prediction_list
+    # st.write(res)
 
     # Predict the objects in the image using YOLOv8 model
     res = model.predict(image, conf=conf)
 
     # Plot the detected objects on the video frame
+    # st.write(res)
     res_plotted = res[0].plot()
-    st.write(res_plotted, type(res_plotted))
+    # st.write(res_plotted, type(res_plotted))
+    '''
+    image = visualize_object_predictions(
+        image,
+        object_prediction_list = res.object_prediction_list
+    )["image"]
+    '''
+    # st.write(image)
     st_frame.image(res_plotted,
                    caption='Detected Video',
                    channels="BGR",
                    use_column_width=True
                    )
 
-
-@st.cache_resource
 def load_model(model_path):
     """
     Loads a YOLO object detection model from the specified model_path.
@@ -86,6 +115,8 @@ def load_model(model_path):
     Returns:
         A YOLO object detection model.
     """
+    global model_path_local
+    model_path_local = model_path
     model = YOLO(model_path)
     return model
 
@@ -189,7 +220,6 @@ def infer_uploaded_video(conf, model):
                 except Exception as e:
                     st.error(f"Error loading video: {e}")
 
-@st.cache_data
 def get_ice_servers():
     return [{"urls": ["stun:stun.l.google.com:19302"]}]
 
